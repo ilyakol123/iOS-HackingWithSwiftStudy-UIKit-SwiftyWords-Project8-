@@ -14,18 +14,19 @@ class ViewController: UIViewController {
     var currentAnswer: UITextField!
     var scoreLabel: UILabel!
     var letterButtons: [UIButton] = []
-    
     var activatedButtons: [UIButton] = []
     var solutions: [String] = []
     
-    var score = 0
+    var score = 0 {
+        didSet {
+            scoreLabel.text = "Score: \(score)"
+        }
+    }
     var level = 1
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         loadLevel()
-        // Do any additional setup after loading the view.
     }
     
     @objc func letterTapped(_ sender: UIButton) {
@@ -57,13 +58,29 @@ class ViewController: UIViewController {
             currentAnswer.text = ""
             score += 1
             
-            if score % 7 == 0 {
-                let ac = UIAlertController(title: "Well done", message: "Are you ready for the next level?", preferredStyle: .alert)
+            solutions.remove(at: solutions.firstIndex(of: answerText)!)
+            
+            if solutions.isEmpty {
+                let ac = UIAlertController(title: "You win!", message: "Would you like to play again?", preferredStyle: .alert)
                 ac.addAction(UIAlertAction(title: "Yes", style: .default, handler: levelUp))
+                ac.addAction(UIAlertAction(title: "No", style: .default))
                 present(ac, animated: true)
             }
             
             
+            
+        } else {
+            let ac = UIAlertController(title: "Incorrect", message: "No such word here", preferredStyle: .alert)
+            ac.addAction(UIAlertAction(title: "Try again", style: .default))
+            present(ac, animated: true)
+            
+            currentAnswer.text = ""
+            score -= 1
+            
+            for buttion in activatedButtons {
+                buttion.isHidden = false
+            }
+            activatedButtons.removeAll()
         }
         
         
@@ -224,6 +241,7 @@ class ViewController: UIViewController {
         for row in 0..<4 {
             for col in 0..<5 {
                 let letterButton = UIButton(type: .system)
+                letterButton.layer.borderWidth = 0.3
                 letterButton.titleLabel?.font = UIFont.systemFont(ofSize: 36)
                 letterButton.setTitle("WWW", for: .normal)
                 
