@@ -16,6 +16,7 @@ class ViewController: UIViewController {
     var letterButtons: [UIButton] = []
     var activatedButtons: [UIButton] = []
     var solutions: [String] = []
+    var leftSolutions: [String] = []
     
     var score = 0 {
         didSet {
@@ -58,9 +59,9 @@ class ViewController: UIViewController {
             currentAnswer.text = ""
             score += 1
             
-            solutions.remove(at: solutions.firstIndex(of: answerText)!)
+            leftSolutions.remove(at: leftSolutions.firstIndex(of: answerText)!)
             
-            if solutions.isEmpty {
+            if leftSolutions.isEmpty {
                 let ac = UIAlertController(title: "You win!", message: "Would you like to play again?", preferredStyle: .alert)
                 ac.addAction(UIAlertAction(title: "Yes", style: .default, handler: levelUp))
                 ac.addAction(UIAlertAction(title: "No", style: .default))
@@ -98,6 +99,17 @@ class ViewController: UIViewController {
         
     }
     
+    func restart(action: UIAlertAction) {
+        level = 1
+        score = 0
+        solutions.removeAll(keepingCapacity: true)
+        loadLevel()
+        
+        for button in letterButtons {
+            button.isHidden = false
+        }
+    }
+    
     func loadLevel() {
         var clueString = ""
         var solutionString = ""
@@ -118,11 +130,15 @@ class ViewController: UIViewController {
                     let solutionWord = answer.replacingOccurrences(of: "|", with: "")
                     solutionString += "\(solutionWord.count) letters\n"
                     solutions.append(solutionWord)
-
+                    leftSolutions.append(solutionWord)
                     let bits = answer.components(separatedBy: "|")
                     letterBits += bits
                 }
             }
+        } else {
+            let ac = UIAlertController(title: "No more levels yet", message: "Let's start again", preferredStyle: .alert)
+            ac.addAction(UIAlertAction(title: "Go", style: .default, handler: restart))
+            present(ac, animated: true)
         }
         cluesLabel.text = clueString.trimmingCharacters(in: .whitespacesAndNewlines)
         answersLabel.text = solutionString.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -136,6 +152,7 @@ class ViewController: UIViewController {
         }// Now configure the buttons and labels
     }
     
+    /// <#Description#>
     override func loadView() {
         view = UIView()
         view.backgroundColor = .white
