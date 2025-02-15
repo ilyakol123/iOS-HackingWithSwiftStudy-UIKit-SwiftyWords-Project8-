@@ -110,11 +110,26 @@ class ViewController: UIViewController {
         }
     }
     
+    var clueString = ""
+    var solutionString = ""
+    var letterBits = [String]()
+    
     func loadLevel() {
-        var clueString = ""
-        var solutionString = ""
-        var letterBits = [String]()
+        
+        parseLevel()
 
+        updateLabels()
+        
+        updateButtons()
+        
+    }
+    
+    @objc func parseLevel() {
+        
+         clueString = ""
+         solutionString = ""
+         letterBits = [String]()
+        
         if let levelFileURL = Bundle.main.url(forResource: "level\(level)", withExtension: "txt") {
             if let levelContents = try? String(contentsOf: levelFileURL) {
                 var lines = levelContents.components(separatedBy: "\n")
@@ -140,19 +155,23 @@ class ViewController: UIViewController {
             ac.addAction(UIAlertAction(title: "Go", style: .default, handler: restart))
             present(ac, animated: true)
         }
+    }
+    
+    @objc func updateLabels() {
         cluesLabel.text = clueString.trimmingCharacters(in: .whitespacesAndNewlines)
         answersLabel.text = solutionString.trimmingCharacters(in: .whitespacesAndNewlines)
-
+    }
+    
+    @objc func updateButtons() {
         letterBits.shuffle()
 
         if letterBits.count == letterButtons.count {
             for i in 0 ..< letterButtons.count {
                 letterButtons[i].setTitle(letterBits[i], for: .normal)
             }
-        }// Now configure the buttons and labels
+        }
     }
-    
-    /// <#Description#>
+    /// Description
     override func loadView() {
         view = UIView()
         view.backgroundColor = .white
