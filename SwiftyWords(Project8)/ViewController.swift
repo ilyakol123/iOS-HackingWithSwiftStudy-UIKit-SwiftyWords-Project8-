@@ -17,6 +17,7 @@ class ViewController: UIViewController {
     var activatedButtons: [UIButton] = []
     var solutions: [String] = []
     var leftSolutions: [String] = []
+    var isNextLevelExist: Bool = true
     
     var score = 0 {
         didSet {
@@ -27,7 +28,8 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        loadLevel()
+        performSelector(inBackground: #selector(loadLevel), with: nil)
+        //loadLevel()
     }
     
     @objc func letterTapped(_ sender: UIButton) {
@@ -59,7 +61,12 @@ class ViewController: UIViewController {
             currentAnswer.text = ""
             score += 1
             
-            leftSolutions.remove(at: leftSolutions.firstIndex(of: answerText)!)
+            //prod
+            //leftSolutions.remove(at: leftSolutions.firstIndex(of: answerText)!)
+            
+            //test
+            leftSolutions.removeAll()
+            
             
             if leftSolutions.isEmpty {
                 let ac = UIAlertController(title: "You win!", message: "Would you like to play again?", preferredStyle: .alert)
@@ -102,25 +109,27 @@ class ViewController: UIViewController {
     func restart(action: UIAlertAction) {
         level = 1
         score = 0
+        
         solutions.removeAll(keepingCapacity: true)
         loadLevel()
-        
+        //performSelector(inBackground: #selector(loadLevel), with: nil)
         for button in letterButtons {
             button.isHidden = false
         }
+        isNextLevelExist = true
     }
     
     var clueString = ""
     var solutionString = ""
     var letterBits = [String]()
     
-    func loadLevel() {
-        
-        parseLevel()
-
-        updateLabels()
-        
-        updateButtons()
+    @objc func loadLevel() {
+        performSelector(inBackground: #selector(parseLevel), with: nil)
+        //parseLevel()
+        performSelector(onMainThread: #selector(updateLabels), with: nil, waitUntilDone: false)
+        //updateLabels()
+        performSelector(onMainThread: #selector(updateButtons), with: nil, waitUntilDone: false)
+        //updateButtons()
         
     }
     
@@ -132,6 +141,7 @@ class ViewController: UIViewController {
         
         if let levelFileURL = Bundle.main.url(forResource: "level\(level)", withExtension: "txt") {
             if let levelContents = try? String(contentsOf: levelFileURL) {
+               
                 var lines = levelContents.components(separatedBy: "\n")
                 lines.shuffle()
 
@@ -144,22 +154,30 @@ class ViewController: UIViewController {
 
                     let solutionWord = answer.replacingOccurrences(of: "|", with: "")
                     solutionString += "\(solutionWord.count) letters\n"
+                    
                     solutions.append(solutionWord)
                     leftSolutions.append(solutionWord)
+                    
                     let bits = answer.components(separatedBy: "|")
                     letterBits += bits
                 }
             }
         } else {
-            let ac = UIAlertController(title: "No more levels yet", message: "Let's start again", preferredStyle: .alert)
-            ac.addAction(UIAlertAction(title: "Go", style: .default, handler: restart))
-            present(ac, animated: true)
+            isNextLevelExist = false
         }
     }
     
     @objc func updateLabels() {
-        cluesLabel.text = clueString.trimmingCharacters(in: .whitespacesAndNewlines)
-        answersLabel.text = solutionString.trimmingCharacters(in: .whitespacesAndNewlines)
+        if isNextLevelExist {
+            cluesLabel.text = clueString.trimmingCharacters(in: .whitespacesAndNewlines)
+            answersLabel.text = solutionString.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        else {
+            let ac = UIAlertController(title: "No more levels ready yet", message: "Resart a game", preferredStyle: .alert)
+            ac.addAction(UIAlertAction(title: "Restart", style: .default, handler: restart))
+            present(ac, animated: true)
+        }
+        
     }
     
     @objc func updateButtons() {
